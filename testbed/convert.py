@@ -60,7 +60,7 @@ def validate_args(args):
     return
 
 
-def preprocess_input(input, type=None):
+def preprocess_input(input, stage=None):
     """
     Preprocess input wav/ spectrogram.
 
@@ -82,8 +82,8 @@ if __name__ == "__main__":
 
     # Instantiate and preprocess CLI arguments.
     model = MODEL_MAP[args.model]
-    input_source = preprocess_input(args.source, type="source")
-    input_target = preprocess_input(args.target, type="target")
+    input_source = preprocess_input(args.source, stage="source")
+    input_target = preprocess_input(args.target, stage="target")
 
     # Run conversion
     converted_sample = model.convert(
