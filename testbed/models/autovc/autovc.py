@@ -13,7 +13,11 @@ import torch
 from ..model import ConversionSystem
 
 # Module-specific imports
-from . import autovc_fork
+from . import AUTOVC_DIR, AUTOVC_PYTHON
+from .autovc_fork import (
+    custom_config,
+    model_vc
+)
 
 
 class AutoVC(ConversionSystem):
@@ -24,36 +28,51 @@ class AutoVC(ConversionSystem):
         return
 
     @staticmethod
+    def preprocess_wav(wav):
+        """
+        Adjust the wav file to work with AutoVC
+        Parameters:
+            sampling rate: 16k
+        """
+        output_wav = f"{wav}.autovc.wav"
+        adjust_sampling_rate = f"ffmpeg -y -i {wav} -ar 16000 {output_wav}"
+        os.system(adjust_sampling_rate)  # TODO: build out utils.py file with CLI runner (subprocess.POpen)
+        return output_wav
+
+    @staticmethod
     def convert(source, target, outfile=None):
         """
         Run voice conversion over a provided source, target.
         Takes in .wav files as source, target.
         """
         # Format directory structure
-        if os.path.isdir('wavs'):
-            shutil.rmtree('wavs')
-        os.mkdir('wavs')
-        os.mkdir('wavs/s001')
-        os.mkdir('wavs/t002')
-        shutil.copyfile(source, f'wavs/s001/{source}')
-        shutil.copyfile(target, f'wavs/t002/{dest}')
+        if os.path.isdir(f'{AUTOVC_DIR}/wavs'):
+            shutil.rmtree(f'{AUTOVC_DIR}/wavs')
+        os.mkdir(f'{AUTOVC_DIR}/wavs')
+        os.mkdir(f'{AUTOVC_DIR}/wavs/s001')
+        os.mkdir(f'{AUTOVC_DIR}/wavs/t002')
+        shutil.copyfile(source, f'{AUTOVC_DIR}/wavs/s001/{source.replace("/", "_")}')
+        shutil.copyfile(target, f'{AUTOVC_DIR}/wavs/t002/{target.replace("/", "_")}')
+        os.remove(source)
+        os.remove(target)
 
         # Generate spectrogram, speaker embeddings
-        cmd = 'python3 autovc_fork/custom_make_spect.py'
+        os.chdir(AUTOVC_DIR)
+        cmd = f'{AUTOVC_PYTHON} autovc_fork/custom_make_spect.py'
         cmds = shlex.split(cmd)
         p = subprocess.Popen(cmds, start_new_session=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         p.wait()
-        cmd = 'python3 custom_make_metadata.py'
+        cmd = f'{AUTOVC_PYTHON} autovc_fork/custom_make_metadata.py'
         cmds = shlex.split(cmd)
         p = subprocess.Popen(cmds, start_new_session=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         p.wait()
         metadata = pickle.load(open('spmel/metadata.pkl', 'rb'))
 
         # Build conversion metadata file
-        source_emb = source.replace(".wav", ".npy")
-        source_embedding = f"spmel/s001/{source_emb}"
-        dest_emb = target.replace(".wav", ".npy")
-        dest_embedding = f"spmel/t002/{dest_emb}"
+        source_emb = source.replace("/", "_")[:-3] + "npy"
+        source_embedding = f"{AUTOVC_DIR}/spmel/s001/{source_emb}"
+        dest_emb = target.replace("/", "_")[:-3] + "npy"
+        dest_embedding = f"{AUTOVC_DIR}/spmel/t002/{dest_emb}"
         source_metadata = [
             "s001",
             metadata[0][1],
@@ -67,7 +86,7 @@ class AutoVC(ConversionSystem):
         conversion_metadata = [source_metadata, target_metadata]
 
         # Run conversion
-        model = autovc_fork.config.autovc_checkpoint
+        model = custom_config.autovc_checkpoint
         def pad_seq(x, base=32):
             len_out = int(base * ceil(float(x.shape[0]) / base))
             len_pad = len_out - x.shape[0]
@@ -75,7 +94,7 @@ class AutoVC(ConversionSystem):
             return np.pad(x, ((0, len_pad), (0, 0)), 'constant'), len_pad
 
         device = 'cuda:0'
-        G = autovc_fork.model_vc.Generator(32, 256, 512, 32).eval().to(device)
+        G = model_vc.Generator(32, 256, 512, 32).eval().to(device)
         g_checkpoint = torch.load(model, map_location='cuda:0')
         G.load_state_dict(g_checkpoint['model'])
 
@@ -99,10 +118,9 @@ class AutoVC(ConversionSystem):
                     uttr_trg = x_identic_psnt[0, 0, :-len_pad, :].cpu().numpy()
                 spect_vc.append(('{}x{}'.format(sbmt_i[0], sbmt_j[0]), uttr_trg))
 
-        target_pickle = 'conversion_results.pkl'
-        with open(target_pickle, 'wb') as handle:
-            pickle.dump(spect_vc, handle)
-            print("Conversion success!")
+        # Clean up intermediary files
+        shutil.rmtree(f'{AUTOVC_DIR}/wavs')
+        shutil.rmtree(f'{AUTOVC_DIR}/spmel')
 
-        converted_spectrogram = "stub"
+        converted_spectrogram = spect_vc[0][1]
         return converted_spectrogram

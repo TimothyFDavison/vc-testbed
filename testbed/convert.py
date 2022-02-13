@@ -82,8 +82,8 @@ if __name__ == "__main__":
 
     # Instantiate and preprocess CLI arguments.
     model = MODEL_MAP[args.model]
-    input_source = preprocess_input(args.source, stage="source")
-    input_target = preprocess_input(args.target, stage="target")
+    input_source = model.preprocess_wav(args.source)
+    input_target = model.preprocess_wav(args.target)
 
     # Run conversion
     converted_sample = model.convert(
