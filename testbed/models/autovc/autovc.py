@@ -28,16 +28,20 @@ class AutoVC(ConversionSystem):
         return
 
     @staticmethod
-    def preprocess_wav(wav):
+    def preprocess_wavs(source, target):
         """
         Adjust the wav file to work with AutoVC
         Parameters:
             sampling rate: 16k
         """
-        output_wav = f"{wav}.autovc.wav"
-        adjust_sampling_rate = f"ffmpeg -y -i {wav} -ar 16000 {output_wav}"
-        os.system(adjust_sampling_rate)  # TODO: build out utils.py file with CLI runner (subprocess.POpen)
-        return output_wav
+        outputs = []
+        for wav in [source, target]:
+            output_wav = f"{wav}.autovc.wav"
+            adjust_sampling_rate = f"ffmpeg -y -i {wav} -ar 16000 {output_wav}"
+            os.system(adjust_sampling_rate)  # TODO: build out utils.py file with CLI runner (subprocess.POpen)
+            outputs.append(output_wav)
+
+        return tuple(outputs)
 
     @staticmethod
     def convert(source, target, outfile=None):

@@ -2,11 +2,13 @@
 import argparse
 
 from models.autovc.autovc import AutoVC
+from models.againvc.againvc import AgainVC
 
 
 # Config
 MODEL_MAP = {
-    "autovc": AutoVC()
+    "autovc": AutoVC(),
+    "againvc": AgainVC()
 }
 
 
@@ -82,8 +84,7 @@ if __name__ == "__main__":
 
     # Instantiate and preprocess CLI arguments.
     model = MODEL_MAP[args.model]
-    input_source = model.preprocess_wav(args.source)
-    input_target = model.preprocess_wav(args.target)
+    input_source, input_target = model.preprocess_wavs(args.source, args.target)
 
     # Run conversion
     converted_sample = model.convert(

@@ -11,7 +11,7 @@ class ConversionSystem(ABC):
 
     # Methods
     @abstractmethod
-    def preprocess_wav(cls, wav):
+    def preprocess_wavs(cls, source, target):
         pass
 
     @abstractmethod
