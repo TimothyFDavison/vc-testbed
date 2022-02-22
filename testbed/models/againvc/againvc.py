@@ -1,13 +1,7 @@
 # Model class for AgainVC system. #
-import argparse
 import os
-import pickle
-from math import ceil
 import numpy as np
-import shlex
 import shutil
-import subprocess
-import torch
 
 from ..model import ConversionSystem
 
@@ -34,6 +28,7 @@ class AgainVC(ConversionSystem):
     """
     AgainVC wrapper class.
     """
+
     def __init__(self):
         return
 
@@ -66,7 +61,7 @@ class AgainVC(ConversionSystem):
         return source, target
 
     @staticmethod
-    def convert(source, target, outfile=None):
+    def convert(source, target, additional_args=None):
         """
         Run voice conversion over a provided source, target.
         Takes in .wav files as source, target.
@@ -93,10 +88,20 @@ class AgainVC(ConversionSystem):
         )
 
         converted_spectrogram = np.load(f'{AGAINVC_DIR}/output/mel/converted.npy')[0]
-        converted_wav = ""  # see wav/ in output directory
+        # Save waveform, if generated
+        if additional_args and additional_args.outfile_wav:
+            converted_wav = [f'{AGAINVC_DIR}/output/wav/{x}'
+                             for x in os.listdir(f'{AGAINVC_DIR}/output/wav/')
+                             if x.endswith(".wav")
+                             ][0]
+            shutil.copyfile(converted_wav, additional_args.outfile_wav)
 
         # Clean up artifacts
         shutil.rmtree(f'{AGAINVC_DIR}/againvc_fork/data')
         shutil.rmtree(f'{AGAINVC_DIR}/output')
 
         return converted_spectrogram
+
+    @staticmethod
+    def vocode(spectrogram, vocoder=None):
+        return

@@ -1,22 +1,25 @@
 # Model class for AutoVC system. #
-import argparse
 import os
 import pickle
 from math import ceil
 import numpy as np
 import shlex
 import shutil
-import soundfile as sf
 import subprocess
 import torch
 
 from ..model import ConversionSystem
 
 # Module-specific imports
-from . import AUTOVC_DIR, AUTOVC_PYTHON
+from . import (
+    AUTOVC_DIR,
+    AUTOVC_PYTHON,
+    AUTOVC_VOCODER
+)
 from .autovc_fork import (
     custom_config,
-    model_vc
+    model_vc,
+    synthesis
 )
 
 
@@ -44,7 +47,7 @@ class AutoVC(ConversionSystem):
         return tuple(outputs)
 
     @staticmethod
-    def convert(source, target, outfile=None):
+    def convert(source, target, additional_args=None):
         """
         Run voice conversion over a provided source, target.
         Takes in .wav files as source, target.
@@ -128,3 +131,15 @@ class AutoVC(ConversionSystem):
 
         converted_spectrogram = spect_vc[0][1]
         return converted_spectrogram
+
+    @staticmethod
+    def vocode(spectrogram, vocoder=AUTOVC_VOCODER):
+        """
+        Reproduce audio signal.
+        """
+        device = torch.device("cuda") if torch.cuda.is_available() else "cpu"
+        model = synthesis.build_model().to(device)
+        checkpoint = torch.load(vocoder)
+        model.load_state_dict(checkpoint["state_dict"])
+        waveform = synthesis.wavegen(model, spectrogram)
+        return waveform

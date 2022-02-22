@@ -1,15 +1,23 @@
 # Plug and play conversion script #
 import argparse
+import numpy as np
+import soundfile as sf
 
 from models.autovc.autovc import AutoVC
 from models.againvc.againvc import AgainVC
-
+from models.adainvc.adainvc import AdainVC
 
 # Config
 MODEL_MAP = {
     "autovc": AutoVC(),
-    "againvc": AgainVC()
+    "againvc": AgainVC(),
+    "adainvc": AdainVC()
 }
+
+VOCODES_BY_DEFAULT = [
+    "adainvc",
+    "againvc"
+]
 
 
 def build_arg_parser():
@@ -44,13 +52,20 @@ def build_arg_parser():
         help="The target wav file or spectrogram for the conversion model."
     )
     parser.add_argument(
-        "-o",
-        "--outfile",
-        dest="outfile",
+        "--outfile-spect",
+        dest="outfile_spect",
         action="store",
         required=False,
         type=str,
-        help="A specified output filepath."
+        help="A specified output filepath for the converted spectrogram."
+    )
+    parser.add_argument(
+        "--outfile-wav",
+        dest="outfile_wav",
+        action="store",
+        required=False,
+        type=str,
+        help="A specified output filepath for the converted wav file."
     )
     return parser
 
@@ -60,20 +75,6 @@ def validate_args(args):
     Validate that source/target files are available,
     """
     return
-
-
-def preprocess_input(input, stage=None):
-    """
-    Preprocess input wav/ spectrogram.
-
-    TODO: should we pass spectrograms or wav files to the conversion models?
-          maybe each model's convert() function decides based on what is
-          available? Though we should figure that out during the preprocess stage
-          So maybe there's a config or mapping that determines input data types
-          per model
-    """
-    processed_input = "stub"
-    return processed_input
 
 
 if __name__ == "__main__":
@@ -90,8 +91,15 @@ if __name__ == "__main__":
     converted_sample = model.convert(
         input_source,
         input_target,
-        outfile=args.outfile
+        additional_args=args
     )
+    if args.outfile_spect:
+        np.save(args.outfile_spect, converted_sample)
+
+    # Run signal reproduction
+    if args.outfile_wav and not (args.model in VOCODES_BY_DEFAULT):
+        waveform = model.vocode(converted_sample)
+        sf.write(args.outfile_wav, waveform, 16000)
 
     # Wrap up
     print(f"Converted sample: {converted_sample}")

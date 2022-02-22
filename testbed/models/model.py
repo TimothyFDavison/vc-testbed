@@ -17,3 +17,7 @@ class ConversionSystem(ABC):
     @abstractmethod
     def convert(cls, source, target):
         pass
+
+    @abstractmethod
+    def vocode(cls, spectrogram, vocoder=None):
+        pass
