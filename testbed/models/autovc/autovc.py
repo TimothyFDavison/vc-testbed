@@ -5,6 +5,7 @@ from math import ceil
 import numpy as np
 import shlex
 import shutil
+import soundfile as sf
 import subprocess
 import torch
 
@@ -133,7 +134,7 @@ class AutoVC(ConversionSystem):
         return converted_spectrogram
 
     @staticmethod
-    def vocode(spectrogram, vocoder=AUTOVC_VOCODER):
+    def vocode(spectrogram, vocoder=AUTOVC_VOCODER, outfile=None):
         """
         Reproduce audio signal.
         """
@@ -142,4 +143,7 @@ class AutoVC(ConversionSystem):
         checkpoint = torch.load(vocoder)
         model.load_state_dict(checkpoint["state_dict"])
         waveform = synthesis.wavegen(model, spectrogram)
+
+        if outfile:
+            sf.write(outfile, waveform, 16000)
         return waveform

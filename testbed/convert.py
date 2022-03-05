@@ -6,12 +6,14 @@ import soundfile as sf
 from models.autovc.autovc import AutoVC
 from models.againvc.againvc import AgainVC
 from models.adainvc.adainvc import AdainVC
+from models.starganv2vc.starganv2vc import StarGANv2VC
 
 # Config
 MODEL_MAP = {
     "autovc": AutoVC(),
     "againvc": AgainVC(),
-    "adainvc": AdainVC()
+    "adainvc": AdainVC(),
+    "starganv2vc": StarGANv2VC()
 }
 
 VOCODES_BY_DEFAULT = [
@@ -95,11 +97,9 @@ if __name__ == "__main__":
     )
     if args.outfile_spect:
         np.save(args.outfile_spect, converted_sample)
+    print(f"Converted sample: {converted_sample}")
 
     # Run signal reproduction
     if args.outfile_wav and not (args.model in VOCODES_BY_DEFAULT):
-        waveform = model.vocode(converted_sample)
-        sf.write(args.outfile_wav, waveform, 16000)
-
-    # Wrap up
-    print(f"Converted sample: {converted_sample}")
+        waveform = model.vocode(converted_sample, outfile=args.outfile_wav)
+        print(f"Converted sample (wav): {waveform}")
