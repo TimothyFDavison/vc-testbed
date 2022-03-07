@@ -9,7 +9,7 @@ import numpy as np
 import torch
 
 # Custom config
-from custom_config import speaker_encoder_checkpoint
+from custom_config import speaker_encoder_checkpoint, AUTOVC_DIR
 
 C = D_VECTOR(dim_input=80, dim_cell=768, dim_emb=256).eval().cuda()
 c_checkpoint = torch.load(speaker_encoder_checkpoint)
@@ -22,7 +22,8 @@ num_uttrs = 1
 len_crop = 128
 
 # Directory containing mel-spectrograms
-rootDir = './spmel'
+
+rootDir = f'{AUTOVC_DIR}/spmel'
 dirName, subdirList, _ = next(os.walk(rootDir))
 print('Found directory: %s' % dirName)
 

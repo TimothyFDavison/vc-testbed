@@ -66,15 +66,15 @@ class AutoVC(ConversionSystem):
 
         # Generate spectrogram, speaker embeddings
         os.chdir(AUTOVC_DIR)
-        cmd = f'{AUTOVC_PYTHON} autovc_fork/custom_make_spect.py'
+        cmd = f'{AUTOVC_PYTHON} {AUTOVC_DIR}/autovc_fork/custom_make_spect.py'
         cmds = shlex.split(cmd)
         p = subprocess.Popen(cmds, start_new_session=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         p.wait()
-        cmd = f'{AUTOVC_PYTHON} autovc_fork/custom_make_metadata.py'
+        cmd = f'{AUTOVC_PYTHON} {AUTOVC_DIR}/autovc_fork/custom_make_metadata.py'
         cmds = shlex.split(cmd)
         p = subprocess.Popen(cmds, start_new_session=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         p.wait()
-        metadata = pickle.load(open('spmel/metadata.pkl', 'rb'))
+        metadata = pickle.load(open(f'{AUTOVC_DIR}/spmel/metadata.pkl', 'rb'))
 
         # Build conversion metadata file
         source_emb = source.replace("/", "_")[:-3] + "npy"

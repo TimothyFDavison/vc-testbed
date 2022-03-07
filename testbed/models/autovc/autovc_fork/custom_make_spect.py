@@ -7,7 +7,7 @@ from librosa.filters import mel
 from numpy.random import RandomState
 
 # Custom config
-from custom_config import autovc_checkpoint
+from custom_config import autovc_checkpoint, AUTOVC_DIR
 
 
 def butter_highpass(cutoff, fs, order=5):
@@ -39,16 +39,15 @@ b, a = butter_highpass(30, 16000, order=5)
 
 
 # audio file directory
-rootDir = './wavs'
+rootDir = f'{AUTOVC_DIR}/wavs'
 # spectrogram directory
-targetDir = './spmel'
-
+targetDir = f'{AUTOVC_DIR}/spmel'
 
 dirName, subdirList, _ = next(os.walk(rootDir))
 print('Found directory: %s' % dirName)
 
+
 for subdir in sorted(subdirList):
-    print(subdir)
     if not os.path.exists(os.path.join(targetDir, subdir)):
         os.makedirs(os.path.join(targetDir, subdir))
     _,_, fileList = next(os.walk(os.path.join(dirName,subdir)))
@@ -66,7 +65,6 @@ for subdir in sorted(subdirList):
         D_mel = np.dot(D, mel_basis)
         D_db = 20 * np.log10(np.maximum(min_level, D_mel)) - 16
         S = np.clip((D_db + 100) / 100, 0, 1)    
-        # save spect    
+        # save spect
         np.save(os.path.join(targetDir, subdir, fileName[:-4]),
-                S.astype(np.float32), allow_pickle=False)    
-        
+                S.astype(np.float32), allow_pickle=False)

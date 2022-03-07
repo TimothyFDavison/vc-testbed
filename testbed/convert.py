@@ -1,24 +1,26 @@
 # Plug and play conversion script #
 import argparse
 import numpy as np
-import soundfile as sf
 
 from models.autovc.autovc import AutoVC
 from models.againvc.againvc import AgainVC
 from models.adainvc.adainvc import AdainVC
 from models.starganv2vc.starganv2vc import StarGANv2VC
+from models.vqmivc.vqmivc import VQMIVC
 
 # Config
 MODEL_MAP = {
     "autovc": AutoVC(),
     "againvc": AgainVC(),
     "adainvc": AdainVC(),
-    "starganv2vc": StarGANv2VC()
+    "starganv2vc": StarGANv2VC(),
+    "vqmivc": VQMIVC()
 }
 
 VOCODES_BY_DEFAULT = [
     "adainvc",
-    "againvc"
+    "againvc",
+    "vqmivc"
 ]
 
 
