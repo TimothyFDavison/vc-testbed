@@ -27,13 +27,6 @@ class AdainVC(ConversionSystem):
         Parameters:
             sampling rate: 16k
         """
-        # Set up AdainVC's directory structure
-        # if os.path.isdir(f'{ADAINVC_DIR}/adainvc_fork/data'):
-        #     shutil.rmtree(f'{ADAINVC_DIR}/adainvc_fork/data')
-        # os.mkdir(f'{ADAINVC_DIR}/adainvc_fork/data')
-        # shutil.copyfile(source, f'{ADAINVC_DIR}/adainvc_fork/data/{source.replace("/", "_")}')
-        # shutil.copyfile(target, f'{ADAINVC_DIR}/adainvc_fork/data/{target.replace("/", "_")}')
-
         # Run AdainVC's preprocessing
 
         return source, target

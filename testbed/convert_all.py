@@ -12,11 +12,11 @@ from models.vqmivc.vqmivc import VQMIVC
 
 # Config
 MODEL_MAP = {
-    "autovc": AutoVC(),
     "againvc": AgainVC(),
     "adainvc": AdainVC(),
-    "starganv2vc": StarGANv2VC(),
-    "vqmivc": VQMIVC()
+#    "starganv2vc": StarGANv2VC(),
+    "vqmivc": VQMIVC(),
+    "autovc": AutoVC(),
 }
 
 VOCODES_BY_DEFAULT = [
@@ -84,12 +84,15 @@ if __name__ == "__main__":
 
     # Instantiate and preprocess CLI arguments.
     for model_name, model in MODEL_MAP.items():
+        print(f"Running {model_name}")
         setattr(args, "outfile_spect", os.path.join(args.out_dir, f"{args.output_prefix}{model_name}_spect"))
         setattr(args, "outfile_wav", os.path.join(args.out_dir, f"{args.output_prefix}{model_name}.wav"))
 
+        print("Preprocessing...")
         input_source, input_target = model.preprocess_wavs(args.source, args.target)
 
         # Run conversion
+        print("Running conversion...")
         converted_sample = model.convert(
             input_source,
             input_target,
@@ -97,9 +100,10 @@ if __name__ == "__main__":
         )
         if args.outfile_spect:
             np.save(args.outfile_spect, converted_sample)
-        print(f"Converted sample: {converted_sample}")
+        print("Done!")
 
         # Run signal reproduction
         if args.outfile_wav and not (model_name in VOCODES_BY_DEFAULT):
+            print("Reconstructing signal...")
             waveform = model.vocode(converted_sample, outfile=args.outfile_wav)
-            print(f"Converted sample (wav): {waveform}")
+            print("Done!")

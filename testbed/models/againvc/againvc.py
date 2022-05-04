@@ -97,7 +97,7 @@ class AgainVC(ConversionSystem):
             shutil.copyfile(converted_wav, additional_args.outfile_wav)
 
         # Clean up artifacts
-        shutil.rmtree(f'{AGAINVC_DIR}/againvc_fork/data')
+        # shutil.rmtree(f'{AGAINVC_DIR}/againvc_fork/data')
         shutil.rmtree(f'{AGAINVC_DIR}/output')
 
         return converted_spectrogram

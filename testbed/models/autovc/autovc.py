@@ -102,7 +102,7 @@ class AutoVC(ConversionSystem):
             return np.pad(x, ((0, len_pad), (0, 0)), 'constant'), len_pad
 
         device = 'cuda:0'
-        G = model_vc.Generator(32, 256, 512, 32).eval().to(device)
+        G = model_vc.Generator(16, 256, 512, 32).eval().to(device)  # first param 32 for pretrained model
         g_checkpoint = torch.load(model, map_location='cuda:0')
         G.load_state_dict(g_checkpoint['model'])
 
